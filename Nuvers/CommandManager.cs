@@ -12,19 +12,15 @@ namespace Nuvers
     {
         private readonly IList<ICommand> _commands = new List<ICommand>();
 
-        public IEnumerable<ICommand> GetCommands()
-        {
-            return _commands;
-        }
+        public IEnumerable<ICommand> GetCommands() => _commands;
 
         public ICommand GetCommand(string commandName)
         {
-            IEnumerable<ICommand> results =
-                _commands.Where(command => 
+            IEnumerable<ICommand> commands =_commands
+                .Where(command => 
                     command.CommandAttribute.CommandName.StartsWith(commandName, StringComparison.OrdinalIgnoreCase) 
-                    || (command.CommandAttribute.AltName ?? String.Empty).StartsWith(commandName, StringComparison.OrdinalIgnoreCase));
-
-            IEnumerable<ICommand> commands = results as IList<ICommand> ?? results.ToList();
+                    || (command.CommandAttribute.AltName ?? string.Empty).StartsWith(commandName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             if (!commands.Any())
             {
@@ -43,8 +39,8 @@ namespace Nuvers
                 if (matchedCommand == null)
                 {
                     // No exact match was found and the result returned multiple prefixes.
-                    throw new CommandLineException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousCommand"), commandName,
-                        String.Join(" ", commands.Select(c => c.CommandAttribute.CommandName))));
+                    throw new CommandLineException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousCommand"), commandName,
+                        string.Join(" ", commands.Select(c => c.CommandAttribute.CommandName))));
                 }
             }
 
@@ -66,7 +62,7 @@ namespace Nuvers
                     {
                         // If the property has neither a setter nor is of a type that can be cast to ICollection<> then there's no way to assign 
                         // values to it. In this case throw.
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("OptionInvalidWithoutSetter"), command.GetType().FullName + "." + propertyInfo.Name));
                     }
                     commandOptions.Add(attribute, propertyInfo);
@@ -83,8 +79,6 @@ namespace Nuvers
             if (attribute != null)
                 _commands.Add(command);
         }
-
-
     }
 }
 

@@ -30,17 +30,14 @@ namespace Nuvers
             {
                 try
                 {
-                    return System.Console.CursorLeft;
+                    return Console.CursorLeft;
                 }
                 catch (IOException)
                 {
                     return 0;
                 }
             }
-            set
-            {
-                System.Console.CursorLeft = value;
-            }
+            set => Console.CursorLeft = value;
         }
 
         public int WindowWidth
@@ -49,17 +46,10 @@ namespace Nuvers
             {
                 try
                 {
-                    var width = System.Console.WindowWidth;
-                    if (width > 0)
-                    {
-                        return width;
-                    }
-                    else
-                    {
-                        // This happens when redirecting output to a file, on
-                        // Linux and OS X (running with Mono).
-                        return 80;
-                    }
+                    var width = Console.WindowWidth;
+                    return width > 0 ? width : 80;
+                    // This happens when redirecting output to a file, on
+                    // Linux and OS X (running with Mono).
                 }
                 catch (IOException)
                 {
@@ -67,20 +57,14 @@ namespace Nuvers
                     return int.MaxValue;
                 }
             }
-            set
-            {
-                System.Console.WindowWidth = value;
-            }
+            set => Console.WindowWidth = value;
         }
 
         private Verbosity _verbosity;
 
         public Verbosity Verbosity
         {
-            get
-            {
-                return _verbosity;
-            }
+            get => _verbosity;
 
             set
             {
@@ -94,10 +78,7 @@ namespace Nuvers
             get; set;
         }
 
-        private TextWriter Out
-        {
-            get { return Verbosity == Verbosity.Quiet ? TextWriter.Null : System.Console.Out; }
-        }
+        private TextWriter Out => Verbosity == Verbosity.Quiet ? TextWriter.Null : Console.Out;
 
         public void Write(object value)
         {
@@ -174,25 +155,17 @@ namespace Nuvers
             WriteError(value, new object[0]);
         }
 
-        public void WriteError(string format, params object[] args)
-        {
-            WriteColor(System.Console.Error, ConsoleColor.Red, format, args);
-        }
+        public void WriteError(string format, params object[] args) => 
+            WriteColor(Console.Error, ConsoleColor.Red, format, args);
 
-        public void WriteWarning(string value)
-        {
+        void IConsole.WriteWarning(string value) => 
             WriteWarning(prependWarningText: true, value: value, args: new object[0]);
-        }
 
-        public void WriteWarning(bool prependWarningText, string value)
-        {
+        public void WriteWarning(bool prependWarningText, string value) => 
             WriteWarning(prependWarningText, value, new object[0]);
-        }
 
-        public void WriteWarning(string value, params object[] args)
-        {
+        public void WriteWarning(string value, params object[] args) => 
             WriteWarning(prependWarningText: true, value: value, args: args);
-        }
 
         public void WriteWarning(bool prependWarningText, string value, params object[] args)
         {
@@ -200,23 +173,20 @@ namespace Nuvers
                 ? String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("CommandLine_Warning"), value)
                 : value;
 
-            WriteColor(System.Console.Out, ConsoleColor.Yellow, message, args);
+            WriteColor(Console.Out, ConsoleColor.Yellow, message, args);
         }
 
-        public void WriteLine(ConsoleColor color, string value, params object[] args)
-        {
-            WriteColor(Out, color, value, args);
-        }
+        public void WriteLine(ConsoleColor color, string value, params object[] args) => WriteColor(Out, color, value, args);
 
         private static void WriteColor(TextWriter writer, ConsoleColor color, string value, params object[] args)
         {
             lock (_writerLock)
             {
-                var currentColor = System.Console.ForegroundColor;
+                var currentColor = Console.ForegroundColor;
                 try
                 {
-                    currentColor = System.Console.ForegroundColor;
-                    System.Console.ForegroundColor = color;
+                    currentColor = Console.ForegroundColor;
+                    Console.ForegroundColor = color;
                     if (args == null || !args.Any())
                     {
                         // If it doesn't look like something that needs to be formatted, don't format it.
@@ -229,15 +199,12 @@ namespace Nuvers
                 }
                 finally
                 {
-                    System.Console.ForegroundColor = currentColor;
+                    Console.ForegroundColor = currentColor;
                 }
             }
         }
 
-        public void PrintJustified(int startIndex, string text)
-        {
-            PrintJustified(startIndex, text, WindowWidth);
-        }
+        public void PrintJustified(int startIndex, string text) => PrintJustified(startIndex, text, WindowWidth);
 
         public void PrintJustified(int startIndex, string text, int maxWidth)
         {
@@ -255,18 +222,9 @@ namespace Nuvers
                     // Calculate the number of chars to print based on the width of the System.Console
                     int length = Math.Min(text.Length, maxWidth);
 
-                    string content;
-
                     // Text we can print without overflowing the System.Console, excluding new line characters.
                     int newLineIndex = text.IndexOf(Environment.NewLine, 0, length, StringComparison.OrdinalIgnoreCase);
-                    if (newLineIndex > -1)
-                    {
-                        content = text.Substring(0, newLineIndex);
-                    }
-                    else
-                    {
-                        content = text.Substring(0, length);
-                    }
+                    var content = text.Substring(0, newLineIndex > -1 ? newLineIndex : length);
 
                     int leftPadding = startIndex + content.Length - CursorLeft;
 
@@ -289,28 +247,28 @@ namespace Nuvers
             var currentColor = ConsoleColor.Gray;
             try
             {
-                currentColor = System.Console.ForegroundColor;
-                System.Console.ForegroundColor = ConsoleColor.Yellow;
-                System.Console.Write(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ConsoleConfirmMessage"), description));
-                var result = System.Console.ReadLine();
+                currentColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ConsoleConfirmMessage"), description));
+                var result = Console.ReadLine();
                 return result.StartsWith(LocalizedResourceManager.GetString("ConsoleConfirmMessageAccept"), StringComparison.OrdinalIgnoreCase);
             }
             finally
             {
-                System.Console.ForegroundColor = currentColor;
+                Console.ForegroundColor = currentColor;
             }
         }
 
         public ConsoleKeyInfo ReadKey()
         {
             EnsureInteractive();
-            return System.Console.ReadKey(intercept: true);
+            return Console.ReadKey(intercept: true);
         }
 
         public string ReadLine()
         {
             EnsureInteractive();
-            return System.Console.ReadLine();
+            return Console.ReadLine();
         }
 
         public void ReadSecureString(SecureString secureString)
@@ -342,7 +300,7 @@ namespace Nuvers
                 throw new InvalidOperationException();
             }
             ConsoleKeyInfo keyInfo;
-            while ((keyInfo = System.Console.ReadKey(intercept: true)).Key != ConsoleKey.Enter)
+            while ((keyInfo = Console.ReadKey(intercept: true)).Key != ConsoleKey.Enter)
             {
                 if (keyInfo.Key == ConsoleKey.Backspace)
                 {
@@ -350,18 +308,18 @@ namespace Nuvers
                     {
                         continue;
                     }
-                    System.Console.SetCursorPosition(System.Console.CursorLeft - 1, System.Console.CursorTop);
-                    System.Console.Write(' ');
-                    System.Console.SetCursorPosition(System.Console.CursorLeft - 1, System.Console.CursorTop);
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    Console.Write(' ');
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
                     secureString.RemoveAt(secureString.Length - 1);
                 }
                 else
                 {
                     secureString.AppendChar(keyInfo.KeyChar);
-                    System.Console.Write('*');
+                    Console.Write('*');
                 }
             }
-            System.Console.WriteLine();
+            Console.WriteLine();
         }
 
         private void EnsureInteractive()
@@ -418,6 +376,4 @@ namespace Nuvers
             return LogLevel.Information;
         }
     }
-
-
 }

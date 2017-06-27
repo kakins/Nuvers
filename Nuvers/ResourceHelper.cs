@@ -31,13 +31,13 @@ namespace Nuvers
                 if (property == null || property.GetGetMethod(nonPublic: true) == null)
                 {
                     throw new InvalidOperationException(
-                        String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ResourceTypeDoesNotHaveProperty"), resourceType, "ResourceManager"));
+                        string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ResourceTypeDoesNotHaveProperty"), resourceType, "ResourceManager"));
                 }
 
                 if (property.PropertyType != typeof(ResourceManager))
                 {
                     throw new InvalidOperationException(
-                        String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ResourcePropertyIncorrectType"), resourceNames, resourceType));
+                        string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ResourcePropertyIncorrectType"), resourceNames, resourceType));
                 }
 
                 resourceManager = (ResourceManager)property.GetGetMethod(nonPublic: true)
@@ -50,10 +50,10 @@ namespace Nuvers
                 var culture = LocalizedResourceManager.GetLanguageName();
                 string value = resourceManager.GetString(resource + '_' + culture, CultureInfo.InvariantCulture) ??
                                resourceManager.GetString(resource, CultureInfo.InvariantCulture);
-                if (String.IsNullOrEmpty(value))
+                if (string.IsNullOrEmpty(value))
                 {
                     throw new InvalidOperationException(
-                        String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ResourceTypeDoesNotHaveProperty"), resourceType, resource));
+                        string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("ResourceTypeDoesNotHaveProperty"), resourceType, resource));
                 }
                 if (builder.Length > 0)
                 {

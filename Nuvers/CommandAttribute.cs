@@ -24,66 +24,34 @@ namespace Nuvers
 
         public string Description
         {
-            get
-            {
-                if (ResourceType != null && !String.IsNullOrEmpty(DescriptionResourceName))
-                {
-                    return ResourceHelper.GetLocalizedString(ResourceType, DescriptionResourceName);
-                }
-                return _description;
-            }
-            private set
-            {
-                _description = value;
-            }
+            get => ResourceType != null && !String.IsNullOrEmpty(DescriptionResourceName)
+                ? ResourceHelper.GetLocalizedString(ResourceType, DescriptionResourceName)
+                : _description;
+            private set => _description = value;
         }
 
         public string UsageSummary
         {
-            get
-            {
-                if (ResourceType != null && !String.IsNullOrEmpty(UsageSummaryResourceName))
-                {
-                    return ResourceHelper.GetLocalizedString(ResourceType, UsageSummaryResourceName);
-                }
-                return _usageSummary;
-            }
-            set
-            {
-                _usageSummary = value;
-            }
+            get => ResourceType != null && !String.IsNullOrEmpty(UsageSummaryResourceName)
+                ? ResourceHelper.GetLocalizedString(ResourceType, UsageSummaryResourceName)
+                : _usageSummary;
+            set => _usageSummary = value;
         }
 
         public string UsageDescription
         {
-            get
-            {
-                if (ResourceType != null && !String.IsNullOrEmpty(UsageDescriptionResourceName))
-                {
-                    return ResourceHelper.GetLocalizedString(ResourceType, UsageDescriptionResourceName);
-                }
-                return _usageDescription;
-            }
-            set
-            {
-                _usageDescription = value;
-            }
+            get => ResourceType != null && !String.IsNullOrEmpty(UsageDescriptionResourceName)
+                ? ResourceHelper.GetLocalizedString(ResourceType, UsageDescriptionResourceName)
+                : _usageDescription;
+            set => _usageDescription = value;
         }
 
         public string UsageExample
         {
-            get
-            {
-                if (ResourceType != null && !String.IsNullOrEmpty(UsageExampleResourceName))
-                {
-                    return ResourceHelper.GetLocalizedString(ResourceType, UsageExampleResourceName);
-                }
-                return _example;
-            }
-            set
-            {
-                _example = value;
-            }
+            get => ResourceType != null && !String.IsNullOrEmpty(UsageExampleResourceName)
+                ? ResourceHelper.GetLocalizedString(ResourceType, UsageExampleResourceName)
+                : _example;
+            set => _example = value;
         }
 
         public CommandAttribute(string commandName, string description)

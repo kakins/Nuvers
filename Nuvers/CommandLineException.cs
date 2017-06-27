@@ -17,7 +17,7 @@ namespace Nuvers
         }
 
         public CommandLineException(string format, params object[] args)
-            : base(String.Format(CultureInfo.CurrentCulture, format, args))
+            : base(string.Format(CultureInfo.CurrentCulture, format, args))
         {
         }
 
