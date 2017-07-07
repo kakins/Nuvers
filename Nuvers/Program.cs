@@ -40,38 +40,50 @@ namespace Nuvers
 
             try
             {
-                var program = new Program();
-                program.Initialize(fileSystem, console);
-
-                foreach (ICommand commandToRegister in program.Commands)
-                {
-                    program.Manager.RegisterCommand(commandToRegister);
-                }
-
-                CommandLineParser parser = new CommandLineParser(program.Manager);
-
-                ICommand command = parser.ParseCommandLine(args) ?? program.SomeCommand;
-
-                command.CurrentDirectory = workingDirectory;
-
-                if (!ArgumentCountValid(command))
-                {
-                    string commandName = command.CommandAttribute.CommandName;
-
-                    console.WriteLine(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
-                }
-                else
-                {
-                    SetConsoleInteractivity(console, command as Command);
-                    command.Execute();
-                }
+                ProcessCommand(fileSystem, console, args, workingDirectory);
             }
             catch (Exception exception)
             {
                 console.LogError(exception.Message);
+                return 1;
             }
 
             return 0;
+        }
+
+        private static void ProcessCommand(IFileSystem fileSystem, IConsole console, string[] args, string workingDirectory)
+        {
+            ICommand command = GetCommand(fileSystem, console, args, workingDirectory);
+
+            if (!ArgumentCountValid(command))
+            {
+                string commandName = command.CommandAttribute.CommandName;
+
+                console.WriteLine(LocalizedResourceManager.GetString("InvalidArguments"), commandName);
+            }
+            else
+            {
+                SetConsoleInteractivity(console, command as Command);
+                command.Execute();
+            }
+        }
+
+        private static ICommand GetCommand(IFileSystem fileSystem, IConsole console, string[] args, string workingDirectory)
+        {
+            var program = new Program();
+
+            program.Initialize(fileSystem, console);
+
+            foreach (ICommand commandToRegister in program.Commands)
+            {
+                program.Manager.RegisterCommand(commandToRegister);
+            }
+
+            CommandLineParser parser = new CommandLineParser(program.Manager);
+
+            var command = parser.ParseCommandLine(args) ?? program.SomeCommand;
+            command.CurrentDirectory = command.CurrentDirectory = workingDirectory;
+            return command;
         }
 
         private static void SetConsoleInteractivity(IConsole console, Command command)
@@ -82,7 +94,7 @@ namespace Nuvers
             // TODO: Remove this in next iteration. This is meant for short-term backwards compat.
             //string vsSwitch = Environment.GetEnvironmentVariable("VisualStudioVersion");
 
-            console.IsNonInteractive = (command != null && command.NonInteractive);
+            console.IsNonInteractive = command != null && command.NonInteractive;
 
             if (command != null)
             {
@@ -114,7 +126,7 @@ namespace Nuvers
                     using (var container = new CompositionContainer(catalog))
                     {
                         container.ComposeExportedValue(console);
-                        container.ComposeExportedValue(fileSystem);
+                        //container.ComposeExportedValue(fileSystem);
                         container.ComposeParts(this);
                     }
                 }
@@ -125,17 +137,10 @@ namespace Nuvers
             }
         }
 
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var name = new AssemblyName(args.Name);
-
-            if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
-            {
-                return typeof(Program).Assembly;
-            }
-
-            return null;
-        }
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) => 
+            string.Equals(new AssemblyName(args.Name).Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase) ? 
+            typeof(Program).Assembly 
+            : null;
     }
 
 }

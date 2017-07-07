@@ -113,8 +113,7 @@ namespace Nuvers
                 }
                 else
                 {
-                    propInfo.SetValue(command, TypeHelper.ChangeType(value, propInfo.PropertyType),
-                        index: null);
+                    propInfo.SetValue(command, TypeHelper.ChangeType(value, propInfo.PropertyType), index: null);
                 }
             }
             catch (CommandLineException)
@@ -149,29 +148,37 @@ namespace Nuvers
         private static TVal GetPartialOptionMatch<TVal>(IEnumerable<TVal> source, Func<TVal, string> getDisplayName,
             Func<TVal, string> getAltName, string option, string value)
         {
-            var results = from item in source
-                where getDisplayName(item).StartsWith(value, StringComparison.OrdinalIgnoreCase) ||
-                      (getAltName(item) ?? String.Empty).StartsWith(value, StringComparison.OrdinalIgnoreCase)
-                select item;
-            var result = results.FirstOrDefault();
+            IEnumerable<TVal> results = source
+                .Where(item =>
+                    getDisplayName(item).StartsWith(value, StringComparison.OrdinalIgnoreCase)
+                    || (getAltName(item) ?? string.Empty).StartsWith(value, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            TVal result = results.FirstOrDefault();
+
             if (!results.Any())
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("UnknownOptionError"), option);
             }
-            else if (results.Skip(1).Any())
+
+            if (!results.Skip(1).Any())
+                return result;
+
+            try
             {
-                try
-                {
-                    // When multiple results are found, if there's an exact match, return it.
-                    result = results.First(c => value.Equals(getDisplayName(c), StringComparison.OrdinalIgnoreCase) ||
-                                                value.Equals(getAltName(c), StringComparison.OrdinalIgnoreCase));
-                }
-                catch (InvalidOperationException)
-                {
-                    throw new CommandLineException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousOption"), value,
-                        String.Join(" ", from c in results select getDisplayName(c))));
-                }
+                // When multiple results are found, if there's an exact match, return it.
+                result = results.First(val => 
+                    value.Equals(getDisplayName(val), StringComparison.OrdinalIgnoreCase) 
+                    || value.Equals(getAltName(val), StringComparison.OrdinalIgnoreCase));
             }
+            catch (InvalidOperationException)
+            {
+                throw new CommandLineException(
+                    string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousOption"), 
+                    value,
+                    string.Join(" ", results.Select(getDisplayName))));
+            }
+
             return result;
         }
 
